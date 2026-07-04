@@ -1,0 +1,16 @@
+{
+  "config": {
+    "maarchDirectory": "/var/www/html/MaarchCourrier/",
+    "customID": "YOUR_CUSTOM_ID",
+    "maarchUrl": "http://localhost/YOUR_CUSTOM_ID/"
+  },
+  "signatureBook": {
+    "userWS": "WS_USER",
+    "passwordWS": "WS_PASSWORD",
+    "validatedStatus": "EENV",
+    "validatedStatusOnlyVisa": "EVIS",
+    "refusedStatus": "REJ_SIGN",
+    "validatedStatusAnnot": "EENV",
+    "refusedStatusAnnot": "REJ_SIGN"
+  }
+}

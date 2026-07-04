@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  OPTION A — NGSign served through Maarch's existing "iParapheur" UI slot.
+  Why: adding a brand-new parapheur to the Angular front requires a dedicated component
+  + a full SPA rebuild. The iParapheur dialog (app-i-paraph) validates as soon as there is
+  a signable attachment and sends no provider-specific data, so we reuse it and repoint the
+  *backend* iParapheur dispatch to NgsignController (see docs/PATCHES.md).
+  Net result: a working UI button, no Angular rebuild.
+
+  Trade-off: this instance can no longer drive the real Libriciel iParapheur.
+-->
+<root>
+    <signatoryBookEnabled>iParapheur</signatoryBookEnabled>
+    <signatoryBook>
+        <id>iParapheur</id>
+        <!-- === The ONLY 2 external settings === -->
+        <url>https://sandbox.ng-sign.com</url>
+        <token>__YOUR_NGSIGN_API_TOKEN__</token>
+        <!-- ===================================== -->
+        <defaultMode>BY_MAIL</defaultMode>
+        <defaultOtp>NONE</defaultOtp>
+        <defaultSigType>CERTIFIED_TIMESTAMP</defaultSigType>
+        <!-- choosePosition=true: the signer places the signature interactively.
+             Set false to use the fixed position defaultPage/defaultXAxis/defaultYAxis. -->
+        <choosePosition>true</choosePosition>
+        <defaultPage>1</defaultPage>
+        <defaultXAxis>81</defaultXAxis>
+        <defaultYAxis>44.28125</defaultYAxis>
+        <signedStates>SIGNED,COMPLETED,FINISHED,VALIDATED,DONE</signedStates>
+        <refusedStates>REFUSED,REJECTED,CANCELED,CANCELLED,EXPIRED</refusedStates>
+    </signatoryBook>
+</root>
