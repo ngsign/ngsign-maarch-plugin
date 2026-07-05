@@ -69,16 +69,15 @@ Functional POC, validated end to end. See `docs/TECHNICAL_MANUAL.md` §9 (limita
 
 ## Requirements
 
-Maarch Courrier 2301 · PHP 8.1 + ext-cURL · PostgreSQL · an NGSign account with an API
-token and the "transaction" feature enabled.
+- Maarch Courrier 2301 (PHP 8.1 + ext-cURL, PostgreSQL)
+- An NGSign account with an API token and the "transaction" feature enabled. Contact NGSign (contact@ng-sign.com) or your NGSign integrator to get started.
 
 ## License
 
 **GNU General Public License v3.0** (see `LICENSE`).
 
 This plugin integrates with Maarch Courrier, itself distributed under **GPLv3**: it
-extends its classes and runs inside its process (a derivative work). GPLv3 is therefore
-the coherent, compatible choice.
+extends its classes and runs inside its process (a derivative work).
 
 Copyright © 2026 NG Technologies. This program is free software: you can redistribute it
 and/or modify it under the terms of the GNU General Public License version 3 as published
