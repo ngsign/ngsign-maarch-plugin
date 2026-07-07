@@ -22,13 +22,10 @@ ngsign-maarch-plugin/
 ├── sql/001_ngsign_transactions.sql   ← tracking table (optional)
 ├── lang/lang-{fr,en}.json            ← "NGSign" UI labels
 ├── batch/ngsign-retrieve.config.sample.json  ← retrieval cron config
-├── poc/                             ← ready-to-run demo instance (release asset)
-│   └── README.md                    ← the .tar.gz bundle is git-ignored (~233 MB)
 └── docs/
     ├── TECHNICAL_MANUAL.md           ← architecture, API, options, limitations
     ├── INSTALLATION.md               ← step-by-step procedure (WITHOUT Docker)
     ├── PATCHES.md                    ← exact edits of the 2 core files
-    └── POC.md                        ← how to run & demo the POC instance
 ```
 
 ## Quick start
@@ -36,22 +33,6 @@ ngsign-maarch-plugin/
 1. Read **`docs/TECHNICAL_MANUAL.md`** (understand the architecture and choose option A or B).
 2. Follow **`docs/INSTALLATION.md`** (install on your Maarch instance).
 3. Apply the 2 patches described in **`docs/PATCHES.md`**.
-
-## Try it — POC / demo instance
-
-Don't want to install anything? A **ready-to-run, preconfigured Maarch + NGSign Docker
-instance** is provided in [`poc/`](poc/) to demo the full signature cycle in minutes:
-
-```bash
-cd poc
-tar xzf maarch-ngsign-export.tar.gz && cd maarch-ngsign-export
-./restore.sh                     # recreates the stack
-# set your NGSign token (see docs/POC.md), then open:
-# http://localhost:8081/maarch/dist/index.html   (bblier / maarch)
-```
-
-Full guide: **[`docs/POC.md`](docs/POC.md)**.
-The bundle (~233 MB) is distributed as a **release asset** (too large for git).
 
 ## The only 2 external settings
 
@@ -70,7 +51,9 @@ Functional POC, validated end to end. See `docs/TECHNICAL_MANUAL.md` §9 (limita
 ## Requirements
 
 - Maarch Courrier 2301 (PHP 8.1 + ext-cURL, PostgreSQL)
-- An NGSign account with an API token and the "transaction" feature enabled. Contact NGSign (contact@ng-sign.com) or your NGSign integrator to get started.
+- An NGSign account with an API token and the "transaction" feature enabled.
+
+Do not hesitate to contact NGSign (contact@ng-sign.com) or your NGSign integrator to get started.
 
 ## License
 
