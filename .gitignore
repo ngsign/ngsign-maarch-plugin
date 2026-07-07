@@ -5,3 +5,4 @@
 
 # POC export bundle (too large for GitHub >100MB — distribute via Release/LFS)
 poc/*.tar.gz
+poc/*.tar.gz
