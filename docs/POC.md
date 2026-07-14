@@ -92,8 +92,6 @@ docker compose -f maarch-ngsign-export/docker-compose.yml up -d  # restart
 
 - The signature label reads "iParapheur" only in internals — the visible UI shows
   **NGSign** (see Option A in `TECHNICAL_MANUAL.md`).
-- The **NGSign sandbox is slow** (~80 s per upload) and requires the account's
-  "transaction" feature enabled.
 - The bundle's `docker-compose.yml` overrides the image entrypoint to (1) make the stock
   entrypoint idempotent on restart and (2) keep the docservers writable — do not remove
   those overrides.
