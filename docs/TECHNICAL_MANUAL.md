@@ -103,21 +103,6 @@ Authentication: header `Authorization: Bearer <token>`.
 | Status | `GET /server/any/transaction/{uuid}` | `{"object":{"status":"CONFIGURED|SIGNED|…", "signers":[…]}}` |
 | Download signed | `GET /server/any/transaction/{uuid}/pdfs/{identifier}` | **raw PDF bytes** (the `content-type` header is sometimes wrongly `application/json`) |
 
-Findings observed during the POC:
-- **`transactionId` = `object.uuid`** and **`identifier` = `object.pdfs[0].identifier`**
-  (everything is wrapped in `object`).
-- The download response returns **raw PDF bytes** despite an `application/json`
-  `content-type` — do not trust the header.
-- **Statuses**: `CONFIGURED` = awaiting signature (normal); `SIGNED` once signed. The
-  lists of "signed"/"refused" statuses are **configurable** in the XML (`signedStates`,
-  `refusedStates`).
-- **Sandbox slowness**: the upload can take **~80 s**. Client timeouts are set to
-  *connect=30 s / total=240 s*.
-- **"transaction" feature**: the NGSign API account must have transaction dispatch
-  enabled.
-
----
-
 ## 5. Signature position
 
 Two modes, driven by `<choosePosition>` in the config:
