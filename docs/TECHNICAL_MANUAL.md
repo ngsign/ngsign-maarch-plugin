@@ -180,15 +180,3 @@ For a user to send a document for signature via the UI:
 - **Security**: the API token is stored in clear text in the XML (restrict file
   permissions); for production, consider a vault / environment variable.
 - **Maarch version compatibility**: re-check the parapheur framework method signatures.
-
----
-
-## 10. What was validated (POC)
-
-- Full send from the UI: upload + launch → attachment frozen, NGSign transaction created
-  with the signer.
-- Real signature by the signer (NGSign status `SIGNED`).
-- Automatic retrieval (cron): download of the signed PDF and **re-integration** into
-  Maarch (new `signed_response` attachment, original moved to `SIGN`).
-- **Interactive** signature placement (`choosePosition=true`) validated against the API.
-- "NGSign" UI labels (badge + action) without recompilation.
