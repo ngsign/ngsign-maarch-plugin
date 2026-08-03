@@ -71,7 +71,7 @@ maps the PSR-4 prefix `ExternalSignatoryBook\` to
 Adding a **brand-new** parapheur to the Angular UI requires writing a dedicated component
 **and rebuilding the SPA**. Two strategies:
 
-### Option A — Reuse the iParapheur "slot" (recommended for a POC / quick rollout)
+### Option A — Reuse the iParapheur "slot"
 - Enable the **`iParapheur`** id in the config, filled with NGSign settings.
 - **Repoint the backend** of the `iParapheur` case to `NgsignController`.
 - The iParapheur send dialog (component `app-i-paraph`) is **generic**: it validates as
@@ -81,7 +81,7 @@ Adding a **brand-new** parapheur to the Angular UI requires writing a dedicated 
 - **Trade-off**: the instance can no longer drive the real Libriciel iParapheur in
   parallel.
 
-### Option B — Native `ngsign` id (recommended for productization)
+### Option B — Native `ngsign` id
 - Clean, dedicated `ngsign` id, coexisting with all other parapheurs.
 - Requires an Angular **`ngsign` component** (tiny: `isValidParaph()` returns `true`, no
   input) referenced in `send-external-signatory-book-action.component.ts` and its
@@ -102,21 +102,6 @@ Authentication: header `Authorization: Bearer <token>`.
 | Configure + launch | `POST /server/protected/transaction/{uuid}/launch` | `{"sigConf":[{signer, sigType, choosePosition, docsConfigs:[{documentName, documentExtension, identifier, [page,xAxis,yAxis]}], mode, otp}]}` |
 | Status | `GET /server/any/transaction/{uuid}` | `{"object":{"status":"CONFIGURED|SIGNED|…", "signers":[…]}}` |
 | Download signed | `GET /server/any/transaction/{uuid}/pdfs/{identifier}` | **raw PDF bytes** (the `content-type` header is sometimes wrongly `application/json`) |
-
-Findings observed during the POC:
-- **`transactionId` = `object.uuid`** and **`identifier` = `object.pdfs[0].identifier`**
-  (everything is wrapped in `object`).
-- The download response returns **raw PDF bytes** despite an `application/json`
-  `content-type` — do not trust the header.
-- **Statuses**: `CONFIGURED` = awaiting signature (normal); `SIGNED` once signed. The
-  lists of "signed"/"refused" statuses are **configurable** in the XML (`signedStates`,
-  `refusedStates`).
-- **Sandbox slowness**: the upload can take **~80 s**. Client timeouts are set to
-  *connect=30 s / total=240 s*.
-- **"transaction" feature**: the NGSign API account must have transaction dispatch
-  enabled.
-
----
 
 ## 5. Signature position
 
@@ -195,15 +180,3 @@ For a user to send a document for signature via the UI:
 - **Security**: the API token is stored in clear text in the XML (restrict file
   permissions); for production, consider a vault / environment variable.
 - **Maarch version compatibility**: re-check the parapheur framework method signatures.
-
----
-
-## 10. What was validated (POC)
-
-- Full send from the UI: upload + launch → attachment frozen, NGSign transaction created
-  with the signer.
-- Real signature by the signer (NGSign status `SIGNED`).
-- Automatic retrieval (cron): download of the signed PDF and **re-integration** into
-  Maarch (new `signed_response` attachment, original moved to `SIGN`).
-- **Interactive** signature placement (`choosePosition=true`) validated against the API.
-- "NGSign" UI labels (badge + action) without recompilation.
