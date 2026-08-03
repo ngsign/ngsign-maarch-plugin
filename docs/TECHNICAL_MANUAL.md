@@ -71,7 +71,7 @@ maps the PSR-4 prefix `ExternalSignatoryBook\` to
 Adding a **brand-new** parapheur to the Angular UI requires writing a dedicated component
 **and rebuilding the SPA**. Two strategies:
 
-### Option A — Reuse the iParapheur "slot" (recommended for a POC / quick rollout)
+### Option A — Reuse the iParapheur "slot"
 - Enable the **`iParapheur`** id in the config, filled with NGSign settings.
 - **Repoint the backend** of the `iParapheur` case to `NgsignController`.
 - The iParapheur send dialog (component `app-i-paraph`) is **generic**: it validates as
@@ -81,7 +81,7 @@ Adding a **brand-new** parapheur to the Angular UI requires writing a dedicated 
 - **Trade-off**: the instance can no longer drive the real Libriciel iParapheur in
   parallel.
 
-### Option B — Native `ngsign` id (recommended for productization)
+### Option B — Native `ngsign` id
 - Clean, dedicated `ngsign` id, coexisting with all other parapheurs.
 - Requires an Angular **`ngsign` component** (tiny: `isValidParaph()` returns `true`, no
   input) referenced in `send-external-signatory-book-action.component.ts` and its
