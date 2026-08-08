@@ -104,6 +104,11 @@ in the attachments' `external_id`.)
 
 ## Step 5 — "NGSign" labels in the UI (Option A)
 
+> **Which step 5 applies to you?**
+> - **Option A** (reuse the iParapheur slot, no rebuild): do **Step 5** below.
+> - **Option B** (native `ngsign` id): **skip 5.1**, do **Step 5-bis** (frontend
+>   component + `ng build`) instead, then still do **5.2** (action label).
+
 Without recompiling, replace the "iParapheur" labels with "NGSign":
 
 **5.1** Translation override — copy the language files:
@@ -121,6 +126,115 @@ UPDATE actions
 SET label_action = 'Send to NGSign (electronic signature)'
 WHERE component = 'sendExternalSignatoryBookAction';
 ```
+
+---
+
+## Step 5-bis — Frontend component + rebuild (Option B only)
+
+> **Do this only for Option B** (native `ngsign` id). Option A does **not** need any of
+> this. This is the step that was missing when "no integration procedure is given before
+> `ng build`".
+>
+> **Verified** against Maarch Courrier **2301** (2301.1.x and 2301.3.x). The 4 wiring
+> edits below are the *exact* changes; the plugin ships the ready component under
+> `frontend/`. A full reproduction (clone → edit → `ng build`) is in
+> `docs/OPTION_B_FRONTEND_TEST.md`.
+
+**Why**: the Angular SPA renders one sub-component per parapheur id
+(`app-maarch-paraph`, `app-i-paraph`, `app-ixbus-paraph`, `app-fast-paraph`…). We add an
+`app-ngsign` sub-component — a faithful copy of the generic **iParapheur** one — declare
+it, reference it in the send action, then rebuild the SPA.
+
+> **Key fact (2301)**: the send action dispatches **dynamically** via
+> `this[authService.externalSignatoryBook.id]` (see `executeAction()` /
+> `isValidAction()`). So the `@ViewChild` **template-ref name must be exactly `ngsign`**
+> (= the config id) — and **`executeAction()` / `isValidAction()` need NO change**. You
+> only add a component + one `@ViewChild` + one template element + one module entry.
+
+**Prerequisites**
+- The Maarch **frontend build sources** (the whole app root: `package.json`,
+  `angular.json`, `src/frontend/`, `tsconfig*.json`).
+- **Node / npm** per the app root `package.json` → `engines`:
+  - **2301.1.x** → Node **≥ 18.7**, npm ≥ 8.15
+  - **2301.3.x** → Node **≥ 20.9**, npm ≥ 10.1
+- The build runs from the **app root** (not `src/frontend/`); output goes to `dist/`.
+
+> ⚠️ **Docker note**: the `maarch/maarchcourrier` **runtime** image ships the *compiled*
+> `dist/` but **no `angular.json` and no Node/Angular toolchain** — you **cannot**
+> `ng build` inside it. Build **outside** (host or a `node:20` container) from the
+> matching source, then copy the resulting `dist/` into the container (see the test doc).
+
+### 5b.1 — Add the `ngsign` component
+Create `src/frontend/app/actions/send-external-signatory-book-action/ngsign/` with
+`ngsign.component.{ts,html,scss}` — copy them from the plugin's **`frontend/`** folder
+(they are a faithful copy of `i-paraph/`, same public contract:
+`isValidParaph()`, `getRessources()`, `getDatas()`, inputs `additionalsInfos` /
+`externalSignatoryBookDatas`). The only differences vs `i-paraph` are the selector
+(`app-ngsign`), the class (`NgsignComponent`) and the label key (`lang.sentToNgsign`).
+
+### 5b.2 — Declare it in `app.module.ts`
+`src/frontend/app/app.module.ts` — next to `IParaphComponent`:
+```ts
+import { NgsignComponent } from './actions/send-external-signatory-book-action/ngsign/ngsign.component';
+// …in @NgModule declarations, right after IParaphComponent:
+        IParaphComponent,
+        NgsignComponent,
+```
+
+### 5b.3 — Reference it in the send action (`.ts`)
+`.../send-external-signatory-book-action.component.ts`:
+```ts
+import { NgsignComponent } from './ngsign/ngsign.component';
+// …next to the other @ViewChild refs (ref name MUST be `ngsign`):
+    @ViewChild('ngsign', { static: false }) ngsign: NgsignComponent;
+```
+> No other change here — `executeAction()` and `isValidAction()` already resolve
+> `this['ngsign']` on their own.
+
+### 5b.4 — Reference it in the send action (`.html`)
+`.../send-external-signatory-book-action.component.html` — right after the `app-i-paraph`
+element (`#ngsign` matches the id so dynamic dispatch works):
+```html
+<app-ngsign #ngsign *ngIf="authService.externalSignatoryBook.id === 'ngsign' && !loading"
+    [additionalsInfos]="additionalsInfos"
+    [externalSignatoryBookDatas]="externalSignatoryBookDatas">
+</app-ngsign>
+```
+
+### 5b.5 — Build the SPA (from the app root)
+```bash
+cd <MAARCH_ROOT>
+npm config set legacy-peer-deps true
+npm ci                         # first time; installs Angular 14 toolchain
+npm run build                  # = ng build --project "maarchCourrier"  → dist/
+# production bundle (hashed), to match a runtime deploy:
+#   npm run build-prod         # = ng build … --configuration production
+```
+The bundle lands in `<MAARCH_ROOT>/dist/`. On a Docker runtime instance, copy it in:
+```bash
+docker cp dist/. <maarch_container>:/var/www/html/MaarchCourrier/dist/
+```
+Then hard-refresh the browser (check the new bundle hash).
+
+### 5b.6 — Label (runtime, no rebuild)
+The dialog uses the backend translation key `sentToNgsign` (served to the SPA from
+`src/lang/lang-*.json`). Add it via the custom override — **no rebuild needed**:
+```bash
+mkdir -p <MAARCH_ROOT>/custom/<customId>/lang
+```
+In `custom/<customId>/lang/lang-fr.json` and `lang-en.json`, add e.g.:
+```json
+{ "sentToNgsign": "Envoyer à NGSign", "ngsign": "NGSign" }
+```
+
+### 5b.7 — Check the backend matches Option B
+- config: `config/remoteSignatoryBooks.ngsign-native.sample.xml` (`<id>ngsign</id>`),
+- dispatch patches: the **`ngsign`** branches in `docs/PATCHES.md` (File 1 + File 2),
+- whitelist in `process_mailsFromSignatoryBook.php` includes `'ngsign'` (PATCHES §2.1).
+
+> **Verify**: trigger "Send to NGSign" on a mail with a signable attachment — the dialog
+> opens via `app-ngsign` and "Validate" is enabled. The rest of the end-to-end flow
+> (Step 9) is identical to Option A.
 
 ---
 

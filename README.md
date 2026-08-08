@@ -19,6 +19,10 @@ ngsign-maarch-plugin/
 ├── config/
 │   ├── remoteSignatoryBooks.iparapheur-slot.sample.xml   ← Option A (no rebuild)
 │   └── remoteSignatoryBooks.ngsign-native.sample.xml     ← Option B (native)
+├── frontend/                          ← Angular component for Option B (ng build)
+│   ├── ngsign.component.ts
+│   ├── ngsign.component.html
+│   └── ngsign.component.scss
 ├── sql/001_ngsign_transactions.sql   ← tracking table (optional)
 ├── lang/lang-{fr,en}.json            ← "NGSign" UI labels
 ├── batch/ngsign-retrieve.config.sample.json  ← retrieval cron config
@@ -26,6 +30,7 @@ ngsign-maarch-plugin/
     ├── TECHNICAL_MANUAL.md           ← architecture, API, options, limitations
     ├── INSTALLATION.md               ← step-by-step procedure (WITHOUT Docker)
     ├── PATCHES.md                    ← exact edits of the 2 core files
+    └── OPTION_B_FRONTEND_TEST.md     ← Option B: reproducible frontend build & deploy
 ```
 
 ## Quick start

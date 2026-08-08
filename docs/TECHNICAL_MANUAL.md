@@ -54,6 +54,7 @@ Maarch Courrier
 | `connector/src/app/external/externalSignatoryBook/ngsign/controllers/NgsignController.php` | Send + retrieve logic (Maarch native contract) |
 | `connector/src/app/external/externalSignatoryBook/ngsign/Infrastructure/NgsignClient.php` | NGSign HTTP client (upload / launch / get / download) |
 | `config/remoteSignatoryBooks.*.sample.xml` | Configuration templates (2 options) |
+| `frontend/ngsign.component.{ts,html}` | Angular send-dialog component — **Option B only** (see §3) |
 | `sql/001_ngsign_transactions.sql` | Tracking table (observability) |
 | `lang/lang-{fr,en}.json` | Label override (display "NGSign" in the UI) |
 | `batch/ngsign-retrieve.config.sample.json` | Retrieval batch configuration |
@@ -82,13 +83,49 @@ Adding a **brand-new** parapheur to the Angular UI requires writing a dedicated 
   parallel.
 
 ### Option B — Native `ngsign` id
-- Clean, dedicated `ngsign` id, coexisting with all other parapheurs.
+- Clean, dedicated `ngsign` id, coexisting with all other parapheurs (iParapheur stays
+  available for the real Libriciel service).
 - Requires an Angular **`ngsign` component** (tiny: `isValidParaph()` returns `true`, no
-  input) referenced in `send-external-signatory-book-action.component.ts` and its
-  template, then an `ng build` of the SPA.
+  input) referenced in `send-external-signatory-book-action` and its template, then an
+  **`ng build`** of the SPA.
+- The plugin ships this component under **`frontend/`**
+  (`ngsign.component.ts` / `.html`).
 
-> The POC uses **Option A**. The backend code is identical in both cases; only the config
-> and the dispatch patch differ (see `PATCHES.md`).
+**Concrete frontend procedure** — **verified on Maarch 2301** (build & bundle checked).
+Full copy/paste in `docs/INSTALLATION.md` **Step 5-bis**; end-to-end reproduction
+(clone → edit → `ng build` → deploy) in `docs/OPTION_B_FRONTEND_TEST.md`. The plugin
+ships the component under `frontend/`.
+
+The send action dispatches **dynamically** via
+`this[authService.externalSignatoryBook.id]`, so the integration is just **4 small
+edits** — `executeAction()` / `isValidAction()` are **not** touched:
+
+1. **Add** the `ngsign` component (`app-ngsign`, `NgsignComponent`) under
+   `src/frontend/app/actions/send-external-signatory-book-action/ngsign/` — a faithful
+   copy of `i-paraph/` (same contract: `isValidParaph()`, `getRessources()`,
+   `getDatas()`, inputs `additionalsInfos` / `externalSignatoryBookDatas`).
+2. **Declare** `NgsignComponent` in `app.module.ts`.
+3. **Reference** it in `send-external-signatory-book-action.component.ts`:
+   `@ViewChild('ngsign') ngsign: NgsignComponent;` — the ref name **must** equal the id
+   `ngsign` (that is what dynamic dispatch resolves).
+4. **Reference** it in the template: `<app-ngsign #ngsign *ngIf="…id === 'ngsign'…">`.
+
+Then **build from the app root**: `npm ci && npm run build`
+(`ng build --project "maarchCourrier"` → `dist/`). Node per `engines`: 2301.1.x → ≥18.7,
+2301.3.x → ≥20.9. The label uses the backend key `sentToNgsign` (runtime lang override,
+no rebuild).
+
+> ⚠️ The `maarch/maarchcourrier` **runtime** Docker image has **no `angular.json` / Node
+> toolchain** → build **outside** it and `docker cp` the `dist/` in (see the test doc).
+
+**Backend for Option B** (identical logic, only the id/dispatch differ from Option A):
+config `remoteSignatoryBooks.ngsign-native.sample.xml` (`<id>ngsign</id>`), the `ngsign`
+branches of both dispatch patches, and `'ngsign'` added to the retrieval whitelist — all
+in `docs/PATCHES.md`.
+
+> The POC was first delivered with **Option A** (no rebuild). The backend code is
+> identical in both cases; only the config, the dispatch patch and — for Option B — the
+> frontend component differ.
 
 ---
 
@@ -170,8 +207,9 @@ For a user to send a document for signature via the UI:
 ## 9. POC limitations & productization recommendations
 
 - **Frontend**: Option A hijacks the iParapheur slot. For a true "NGSign" brand in the UI
-  and coexistence with iParapheur, build the Angular `ngsign` component (Option B) and
-  recompile.
+  and coexistence with iParapheur, use Option B — the Angular `ngsign` component is
+  shipped in `frontend/` and integrated per §3 / INSTALLATION Step 5-bis (requires an
+  `ng build`).
 - **Single signer** handled (the `sign` step of the circuit). To support several
   sequential/parallel signers, iterate over the `sign` steps and build several `sigConf`
   entries.
