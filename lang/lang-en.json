@@ -1,4 +1,7 @@
 {
     "iParapheur": "NGSign",
-    "sentToIParapheur": "Send to NGSign"
+    "sentToIParapheur": "Send to NGSign",
+    "ngsign": "NGSign",
+    "sentToNgsign": "Send to NGSign",
+    "ngsignWorkflow": "NGSign signature workflow"
 }

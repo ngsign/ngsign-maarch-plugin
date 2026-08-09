@@ -1,9 +1,10 @@
 # Maarch dispatch patches — NGSign
 
-Two Maarch core files must be modified to route the send and the retrieval to
-`NgsignController`. Depending on the chosen **option** (see `TECHNICAL_MANUAL.md`), the id
-used is `iParapheur` (Option A, reuse of the UI slot, no rebuild) or `ngsign` (Option B,
-native id, requires a frontend component).
+Three Maarch core files must be modified: two to route the send and the retrieval to
+`NgsignController`, and — **for Option B only** — a third so the send dialog recognises
+the `ngsign` id and lists the signable attachments. Depending on the chosen **option**
+(see `TECHNICAL_MANUAL.md`), the id used is `iParapheur` (Option A, reuse of the UI slot,
+no rebuild) or `ngsign` (Option B, native id, requires a frontend component).
 
 > Line numbers are indicative (Maarch Courrier 2301 baseline); locate the blocks by their
 > content.
@@ -86,6 +87,45 @@ for the main document (`version => 'resLetterbox'`).
 } elseif ($configRemoteSignatoryBook['id'] == 'ngsign') {
     $retrievedLetterboxMails = \ExternalSignatoryBook\ngsign\controllers\NgsignController::retrieveSignedMails(['config' => $configRemoteSignatoryBook, 'idsToRetrieve' => $idsToRetrieve, 'version' => 'resLetterbox']);
 }
+```
+
+---
+
+## File 3 — `src/app/action/controllers/PreProcessActionController.php` (Option B only)
+
+Method `checkExternalSignatoryBook()`. When the user runs the "Send to signatory book"
+action, this pre-process builds the list of signable attachments shown in the dialog
+(`additionalsInfos.attachments`). It branches on the enabled book id via a **hardcoded
+whitelist**; an id absent from it produces an empty list.
+
+**Symptom if this patch is missing (Option B):** the `app-ngsign` dialog opens but shows
+*"Aucun élément éligible / No eligible element"* (or the attachment list is empty) and the
+**Validate** button stays greyed out — even though the attachment is a signable type and
+flagged *in signature book*. The front `NgsignComponent.isValidParaph()` returns `false`
+because `additionalsInfos.attachments.length === 0`.
+
+### Option A — reuse the `iParapheur` slot
+No change: `iParapheur` is already in the whitelist.
+
+### Option B — native `ngsign` id
+Add `'ngsign'` to the `in_array` whitelist (the branch that loads attachments — the same
+one used by `maarchParapheur`):
+
+```php
+// BEFORE
+if (in_array($signatureBookEnabled, ['maarchParapheur', 'fastParapheur', 'iParapheur', 'ixbus'])) {
+
+// AFTER
+if (in_array($signatureBookEnabled, ['maarchParapheur', 'fastParapheur', 'iParapheur', 'ixbus', 'ngsign'])) {
+```
+
+> This branch already applies exactly the filters `NgsignController::sendDatas()` expects
+> (signable `attachment_type`, `in_signature_book = 'true'`, converted-to-PDF, file present
+> on the docserver), so no further change is needed.
+
+Check syntax after editing:
+```bash
+php -l <MAARCH_ROOT>/src/app/action/controllers/PreProcessActionController.php
 ```
 
 ---
