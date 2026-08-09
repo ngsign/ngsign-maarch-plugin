@@ -11,6 +11,9 @@
     <signatoryBook>
         <id>ngsign</id>
         <!-- === The ONLY 2 required external settings === -->
+        <!-- url = HOST ONLY, without the /server context path. The client already
+             prefixes every call with /server/... (e.g. /server/protected/transaction/pdfs).
+             Appending /server here yields a double /server → NGSign HTTP 404. -->
         <url>https://sandbox.ng-sign.com</url>
         <token>__YOUR_NGSIGN_API_TOKEN__</token>
         <!-- ============================================== -->

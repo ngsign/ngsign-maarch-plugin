@@ -76,16 +76,21 @@ token). Example (Option A):
 
 ## Step 3 — Apply the dispatch patches
 
-Modify the 2 core files as described in `docs/PATCHES.md`:
+Modify the core files as described in `docs/PATCHES.md`:
 1. `<MAARCH_ROOT>/src/app/action/controllers/ExternalSignatoryBookTrait.php`
    (route the send to `NgsignController::sendDatas`).
 2. `<MAARCH_ROOT>/bin/signatureBook/process_mailsFromSignatoryBook.php`
    (whitelist + route the retrieval to `NgsignController::retrieveSignedMails`).
+3. **Option B only** — `<MAARCH_ROOT>/src/app/action/controllers/PreProcessActionController.php`
+   (add `'ngsign'` to the `checkExternalSignatoryBook()` whitelist so the send dialog lists
+   the signable attachments; **without it the dialog shows "no eligible element" and
+   Validate stays greyed out** — see PATCHES §File 3).
 
 Check the syntax after editing:
 ```bash
 php -l <MAARCH_ROOT>/src/app/action/controllers/ExternalSignatoryBookTrait.php
 php -l <MAARCH_ROOT>/bin/signatureBook/process_mailsFromSignatoryBook.php
+php -l <MAARCH_ROOT>/src/app/action/controllers/PreProcessActionController.php   # Option B
 php -l <MAARCH_ROOT>/src/app/external/externalSignatoryBook/ngsign/controllers/NgsignController.php
 php -l <MAARCH_ROOT>/src/app/external/externalSignatoryBook/ngsign/Infrastructure/NgsignClient.php
 ```

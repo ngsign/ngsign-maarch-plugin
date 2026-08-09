@@ -29,15 +29,18 @@ ngsign-maarch-plugin/
 └── docs/
     ├── TECHNICAL_MANUAL.md           ← architecture, API, options, limitations
     ├── INSTALLATION.md               ← step-by-step procedure (WITHOUT Docker)
-    ├── PATCHES.md                    ← exact edits of the 2 core files
-    └── OPTION_B_FRONTEND_TEST.md     ← Option B: reproducible frontend build & deploy
+    ├── PATCHES.md                    ← exact edits of the core files (2 + 1 for Option B)
+    ├── OPTION_B_FRONTEND_TEST.md     ← Option B: reproducible frontend build & deploy
+    └── OPTION_B_VALIDATION.md        ← Option B: end-to-end validation report + gotchas
 ```
 
 ## Quick start
 
 1. Read **`docs/TECHNICAL_MANUAL.md`** (understand the architecture and choose option A or B).
 2. Follow **`docs/INSTALLATION.md`** (install on your Maarch instance).
-3. Apply the 2 patches described in **`docs/PATCHES.md`**.
+3. Apply the patches described in **`docs/PATCHES.md`** (2 core files, +1 more for Option B).
+4. Option B: build/deploy the SPA (**`docs/OPTION_B_FRONTEND_TEST.md`**) and validate against
+   **`docs/OPTION_B_VALIDATION.md`** (end-to-end checklist + gotchas).
 
 ## The only 2 external settings
 

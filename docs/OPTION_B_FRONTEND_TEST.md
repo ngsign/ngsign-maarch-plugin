@@ -92,6 +92,12 @@ docker exec <maarch_container> sh -c '
   printf "%s\n" "{\"sentToNgsign\":\"Envoyer à NGSign\",\"ngsign\":\"NGSign\"}" \
     > /var/www/html/MaarchCourrier/custom/<customId>/lang/lang-fr.json'
 ```
+> ⚠️ This `custom/<customId>/lang/*` override is only served to the SPA when
+> `CoreConfigModel::getCustomId()` resolves `<customId>` for **web** requests (via
+> `custom/custom.json` host/path mapping). With no such mapping it returns `''` and the
+> override is silently ignored — the dialog keeps showing `lang.sentToNgsign`. In that
+> case add the keys to the **core** `src/lang/lang-{fr,en}.json` instead. Then hard-reload
+> the SPA (translations are browser-cached). See `OPTION_B_VALIDATION.md` §4.
 
 ## 5. Deploy the Option B backend (same container)
 
@@ -99,7 +105,9 @@ docker exec <maarch_container> sh -c '
 C=<maarch_container>; ROOT=/var/www/html/MaarchCourrier
 docker cp connector/src/app/external/externalSignatoryBook/ngsign $C:$ROOT/src/app/external/externalSignatoryBook/
 docker cp config/remoteSignatoryBooks.ngsign-native.sample.xml    $C:$ROOT/modules/visa/xml/remoteSignatoryBooks.xml
-# then apply the two ngsign dispatch patches (docs/PATCHES.md, Option B) inside the container,
+# then apply the three ngsign patches (docs/PATCHES.md, Option B) inside the container:
+#   File 1 ExternalSignatoryBookTrait.php, File 2 process_mailsFromSignatoryBook.php,
+#   File 3 PreProcessActionController.php (checkExternalSignatoryBook whitelist).
 # and the sql/ table if wanted.
 ```
 Fill `<url>` + `<token>` in the XML, fix ownership so the web user can read the files
@@ -111,6 +119,10 @@ Follow `INSTALLATION.md` Step 9. Option-B-specific check first: open a mail with
 signable attachment → **Send to NGSign** → the dialog renders via `app-ngsign`, Validate
 is enabled, and iParapheur still works in parallel. Then the full cycle: send → FRZ →
 sign on NGSign → cron retrieval → `signed_response` + SIGN.
+
+> For the full validated cycle, the gotchas met on the way (empty dialog, HTTP 404,
+> "Connection refused" on retrieval, raw i18n keys…) and a 100%-UI test recipe, see
+> **`OPTION_B_VALIDATION.md`**.
 
 ## 7. Cleanup
 
