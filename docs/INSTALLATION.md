@@ -137,8 +137,7 @@ WHERE component = 'sendExternalSignatoryBookAction';
 ## Step 5-bis — Frontend component + rebuild (Option B only)
 
 > **Do this only for Option B** (native `ngsign` id). Option A does **not** need any of
-> this. This is the step that was missing when "no integration procedure is given before
-> `ng build`".
+> this.
 >
 > **Verified** against Maarch Courrier **2301** (2301.1.x and 2301.3.x). The 4 wiring
 > edits below are the *exact* changes; the plugin ships the ready component under
