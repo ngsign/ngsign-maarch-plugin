@@ -123,7 +123,7 @@ config `remoteSignatoryBooks.ngsign-native.sample.xml` (`<id>ngsign</id>`), the 
 branches of both dispatch patches, and `'ngsign'` added to the retrieval whitelist — all
 in `docs/PATCHES.md`.
 
-> The POC was first delivered with **Option A** (no rebuild). The backend code is
+> The backend code is
 > identical in both cases; only the config, the dispatch patch and — for Option B — the
 > frontend component differ.
 
@@ -205,11 +205,6 @@ For a user to send a document for signature via the UI:
 ---
 
 ## 9. POC limitations & productization recommendations
-
-- **Frontend**: Option A hijacks the iParapheur slot. For a true "NGSign" brand in the UI
-  and coexistence with iParapheur, use Option B — the Angular `ngsign` component is
-  shipped in `frontend/` and integrated per §3 / INSTALLATION Step 5-bis (requires an
-  `ng build`).
 - **Single signer** handled (the `sign` step of the circuit). To support several
   sequential/parallel signers, iterate over the `sign` steps and build several `sigConf`
   entries.
