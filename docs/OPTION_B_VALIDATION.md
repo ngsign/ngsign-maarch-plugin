@@ -85,10 +85,6 @@ The complete cycle works:
 - **Fix:** run it (`INSTALLATION.md` Step 4) if you want the observability table. The flow
   itself does not depend on it — the NGSign ids live in the attachment's `external_id`.
 
-### 6. NGSign sandbox latency (operational note)
-- The sandbox is slow: `getTransaction`/upload can occasionally time out (~180 s). This is
-  transient — the next cron tick retries. Keep the client's generous cURL timeouts.
-
 ---
 
 ## 100%-UI test recipe (once the install is correct)
