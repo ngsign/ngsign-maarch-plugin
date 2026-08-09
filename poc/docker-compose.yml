@@ -1,0 +1,39 @@
+# NGSign × Maarch Courrier — Option B POC
+#
+#   1. Set your NGSign API token in ./remoteSignatoryBooks.xml   (see README.md → "Set your token")
+#   2. docker compose up -d
+#   3. open http://localhost:8080     (superadmin / superadmin)
+#
+# Replace DOCKERHUB_USER below with the published namespace.
+
+services:
+  db:
+    image: DOCKERHUB_USER/ngsign-maarch-poc-db:latest
+    environment:
+      POSTGRES_USER: maarch
+      POSTGRES_PASSWORD: maarch
+      POSTGRES_DB: maarch_courrier
+    volumes:
+      - db_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U maarch -d maarch_courrier"]
+      interval: 5s
+      timeout: 5s
+      retries: 30
+
+  app:
+    image: DOCKERHUB_USER/ngsign-maarch-poc-app:latest
+    depends_on:
+      db:
+        condition: service_healthy
+    ports:
+      - "8080:80"
+    volumes:
+      # ↓ Edit this local file to set your NGSign <token> (and <url>),
+      #   then:  docker compose restart app
+      - ./remoteSignatoryBooks.xml:/var/www/html/MaarchCourrier/modules/visa/xml/remoteSignatoryBooks.xml
+      - docservers:/opt/maarch/docservers
+
+volumes:
+  db_data:
+  docservers:
