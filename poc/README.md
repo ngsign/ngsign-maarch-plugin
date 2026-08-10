@@ -1,7 +1,7 @@
-# NGSign × Maarch Courrier — Option B POC (Docker)
+# NGSign × Maarch Courrier — POC (Docker)
 
 A ready-to-run proof of concept of the **NGSign** electronic-signature connector for
-**Maarch Courrier 2301**, using the native `ngsign` integration (Option B). It bundles two
+**Maarch Courrier 2301**, using the native `ngsign` integration. It bundles two
 images:
 
 | Image | Content |
