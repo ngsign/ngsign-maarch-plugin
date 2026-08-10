@@ -6,6 +6,23 @@ Integrates **NGSign** (electronic signature) as an **external signatory book** i
 Full cycle: send a document from Maarch → sign on NGSign → automatic retrieval of the
 signed document and re-integration into Maarch.
 
+## Try it in Docker (POC)
+
+A ready-to-run demo is published on Docker Hub — no build and no existing Maarch install
+needed:
+
+```bash
+cd poc
+# 1. paste your NGSign token into remoteSignatoryBooks.xml
+docker compose up -d
+# 2. open http://localhost:8080     (superadmin / superadmin)
+```
+
+Images: [`ngsign/maarch-poc-app`](https://hub.docker.com/r/ngsign/maarch-poc-app) +
+[`ngsign/maarch-poc-db`](https://hub.docker.com/r/ngsign/maarch-poc-db) (self-seeding demo
+database). Full walkthrough — accounts, the end-to-end signature test, troubleshooting —
+in [`poc/README.md`](poc/README.md).
+
 ## Package contents
 
 ```
@@ -26,6 +43,11 @@ ngsign-maarch-plugin/
 ├── sql/001_ngsign_transactions.sql   ← tracking table (optional)
 ├── lang/lang-{fr,en}.json            ← "NGSign" UI labels
 ├── batch/ngsign-retrieve.config.sample.json  ← retrieval cron config
+├── poc/                              ← ready-to-run Docker POC (compose + Docker Hub images)
+│   ├── docker-compose.yml            ← app + self-seeding database
+│   ├── remoteSignatoryBooks.xml      ← put your NGSign token here (bind-mounted)
+│   ├── db/                           ← Dockerfile + demo DB seed
+│   └── README.md                     ← run + full test walkthrough
 └── docs/
     ├── TECHNICAL_MANUAL.md           ← architecture, API, options, limitations
     ├── INSTALLATION.md               ← step-by-step procedure (WITHOUT Docker)
