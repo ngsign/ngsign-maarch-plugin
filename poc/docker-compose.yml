@@ -4,11 +4,10 @@
 #   2. docker compose up -d
 #   3. open http://localhost:8080     (superadmin / superadmin)
 #
-# Replace DOCKERHUB_USER below with the published namespace.
 
 services:
   db:
-    image: DOCKERHUB_USER/ngsign-maarch-poc-db:latest
+    image: ngsign/maarch-poc-db:latest
     environment:
       POSTGRES_USER: maarch
       POSTGRES_PASSWORD: maarch
@@ -22,7 +21,7 @@ services:
       retries: 30
 
   app:
-    image: DOCKERHUB_USER/ngsign-maarch-poc-app:latest
+    image: ngsign/maarch-poc-app:latest
     depends_on:
       db:
         condition: service_healthy

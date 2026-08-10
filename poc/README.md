@@ -6,8 +6,8 @@ images:
 
 | Image | Content |
 |---|---|
-| `DOCKERHUB_USER/ngsign-maarch-poc-app` | Maarch Courrier 2301 + the compiled Option B SPA + the `ngsign` connector + the 3 core patches + the retrieval cron (every 5 min) |
-| `DOCKERHUB_USER/ngsign-maarch-poc-db`  | PostgreSQL 14, **self-seeding** with the Maarch demo database on first start |
+| `ngsign/maarch-poc-app` | Maarch Courrier 2301 + the compiled Option B SPA + the `ngsign` connector + the 3 core patches + the retrieval cron (every 5 min) |
+| `ngsign/maarch-poc-db`  | PostgreSQL 14, **self-seeding** with the Maarch demo database on first start |
 
 > **Demo instance — not for production.** It ships well-known demo credentials
 > (`superadmin`/`superadmin`, DB `maarch`/`maarch`) and no real secret. Do not expose it
