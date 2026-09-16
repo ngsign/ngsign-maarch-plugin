@@ -103,25 +103,6 @@ The batch calls Maarch back over REST at its **internal** URL (`http://localhost
 Apache on port **80** inside the container — *not* the host-mapped `8080`). This is already
 configured in `ngsign_batch_config.json`.
 
-## Rebuild the application image after a plugin change
-
-The published `ngsign/maarch-poc-app` image is a snapshot: editing this Git
-repository does not modify it. The reproducible build recipe is in
-[`app/README.md`](app/README.md), including the French procedure to update and publish
-a plugin change on Docker Hub. It copies the connector, applies the three native
-NGSign patches, installs the retrieval cron and injects the pre-built Angular SPA.
-
-After preparing `poc/app/dist/` as described there, build and publish from the repository
-root:
-
-```bash
-docker build -f poc/app/Dockerfile -t ngsign/maarch-poc-app:1.0.1 .
-docker push ngsign/maarch-poc-app:1.0.1
-```
-
-Use a version tag (such as `1.0.1`) in `docker-compose.yml`, then update a running POC
-with `docker compose pull app && docker compose up -d --force-recreate app`.
-
 ---
 
 ## Troubleshooting

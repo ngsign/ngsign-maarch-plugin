@@ -6,8 +6,3 @@
 # POC export bundle (too large for GitHub >100MB — distribute via Release/LFS)
 poc/*.tar.gz
 poc/*.tar.gz
-
-# The Option-B Angular bundle is supplied to the Docker build, but is a generated
-# artifact (and can exceed GitHub's size limit).
-poc/app/dist/*
-!poc/app/dist/.gitkeep
