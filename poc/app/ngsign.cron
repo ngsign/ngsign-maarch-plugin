@@ -1,0 +1,1 @@
+*/5 * * * * www-data cd /var/www/html/MaarchCourrier && php bin/signatureBook/process_mailsFromSignatoryBook.php -c bin/signatureBook/ngsign_batch_config.json >> /tmp/ngsign_cron.log 2>&1
