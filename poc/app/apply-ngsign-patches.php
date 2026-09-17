@@ -85,7 +85,9 @@ PHP,
             continue;
         }
 
-        $pattern = "~(} elseif \(\$configRemoteSignatoryBook\['id'\] == 'iParapheur'\) \{\s*"
+        // Depending on the Maarch 2301 minor, iParapheur can be the first
+        // branch (`if`) or a later branch (`} elseif`) in the dispatch chain.
+        $pattern = "~((?:if|} elseif) \(\$configRemoteSignatoryBook\['id'\] == 'iParapheur'\) \{\s*"
             . preg_quote($resultVariable, '~') . " = .*?;\s*})~s";
         $replacement = '$1' . " elseif (\$configRemoteSignatoryBook['id'] == 'ngsign') {\n"
             . "    {$resultVariable} = \\ExternalSignatoryBook\\ngsign\\controllers\\NgsignController::retrieveSignedMails(['config' => \$configRemoteSignatoryBook, 'idsToRetrieve' => \$idsToRetrieve, 'version' => '{$version}']);\n"
