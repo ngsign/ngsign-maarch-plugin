@@ -91,11 +91,11 @@ PHP,
         // runtime image. Insert NGSign before them; no existing provider changes.
         'retrievedMails' => [
             'version' => 'noVersion',
-            'anchor'  => "if (\$configRemoteSignatoryBook['id'] == 'ixbus') {",
+            'provider' => 'ixbus',
         ],
         'retrievedLetterboxMails' => [
             'version' => 'resLetterbox',
-            'anchor'  => "if (\$configRemoteSignatoryBook['id'] == 'maarchParapheur') {",
+            'provider' => 'maarchParapheur',
         ],
     ];
     foreach ($dispatches as $variable => $dispatch) {
@@ -104,12 +104,22 @@ PHP,
             continue;
         }
 
-        $anchor = $dispatch['anchor'];
         $version = $dispatch['version'];
-        $replacement = "if (\$configRemoteSignatoryBook['id'] == 'ngsign') {\n"
-            . "    {$resultVariable} = \\ExternalSignatoryBook\\ngsign\\controllers\\NgsignController::retrieveSignedMails(['config' => \$configRemoteSignatoryBook, 'idsToRetrieve' => \$idsToRetrieve, 'version' => '{$version}']);\n"
-            . '} elseif ' . substr($anchor, 3);
-        $updated = str_replace($anchor, $replacement, $content, $count);
+        // Whitespace differs between runtime-image builds, hence the flexible
+        // match instead of a literal string replacement.
+        $pattern = "~if\s*\(\s*\$configRemoteSignatoryBook\s*\[\s*'id'\s*\]\s*==\s*'"
+            . preg_quote($dispatch['provider'], '~') . "'\s*\)\s*\{~";
+        $updated = preg_replace_callback(
+            $pattern,
+            static function (array $match) use ($resultVariable, $version): string {
+                return "if (\$configRemoteSignatoryBook['id'] == 'ngsign') {\n"
+                    . "    {$resultVariable} = \\ExternalSignatoryBook\\ngsign\\controllers\\NgsignController::retrieveSignedMails(['config' => \$configRemoteSignatoryBook, 'idsToRetrieve' => \$idsToRetrieve, 'version' => '{$version}']);\n"
+                    . '} elseif ' . preg_replace('~^if\s*~', '', $match[0], 1);
+            },
+            $content,
+            1,
+            $count
+        );
         if ($count !== 1) {
             throw new RuntimeException(
                 "Could not find the {$variable} dispatch anchor in {$batch}. "
