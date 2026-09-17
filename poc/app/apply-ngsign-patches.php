@@ -86,28 +86,33 @@ PHP,
         throw new RuntimeException("Cannot read {$batch}");
     }
 
-    $patterns = [
-        'retrievedMails' => 'noVersion',
-        'retrievedLetterboxMails' => 'resLetterbox',
+    $dispatches = [
+        // These are the first dispatch branches in the Maarch Courrier 2301.1.5
+        // runtime image. Insert NGSign before them; no existing provider changes.
+        'retrievedMails' => [
+            'version' => 'noVersion',
+            'anchor'  => "if (\$configRemoteSignatoryBook['id'] == 'ixbus') {",
+        ],
+        'retrievedLetterboxMails' => [
+            'version' => 'resLetterbox',
+            'anchor'  => "if (\$configRemoteSignatoryBook['id'] == 'maarchParapheur') {",
+        ],
     ];
-    foreach ($patterns as $variable => $version) {
+    foreach ($dispatches as $variable => $dispatch) {
         $resultVariable = '$' . $variable;
         if (str_contains($content, "{$resultVariable} = \\ExternalSignatoryBook\\ngsign\\controllers\\NgsignController::retrieveSignedMails")) {
             continue;
         }
 
-        // Put NGSign first in the dispatch chain. The order and available
-        // built-in books vary between Maarch 2301 minors, so do not rely on
-        // a specific iParapheur branch being present.
-        $pattern = "~if (?=\(\$configRemoteSignatoryBook\['id'\] == '[^']+'\) \{\s*"
-            . preg_quote($resultVariable, '~') . " = .*?;)~s";
+        $anchor = $dispatch['anchor'];
+        $version = $dispatch['version'];
         $replacement = "if (\$configRemoteSignatoryBook['id'] == 'ngsign') {\n"
             . "    {$resultVariable} = \\ExternalSignatoryBook\\ngsign\\controllers\\NgsignController::retrieveSignedMails(['config' => \$configRemoteSignatoryBook, 'idsToRetrieve' => \$idsToRetrieve, 'version' => '{$version}']);\n"
-            . '} elseif ';
-        $updated = preg_replace($pattern, $replacement, $content, 1, $count);
-        if ($updated === null || $count !== 1) {
+            . '} elseif ' . substr($anchor, 3);
+        $updated = str_replace($anchor, $replacement, $content, $count);
+        if ($count !== 1) {
             throw new RuntimeException(
-                "Could not find the {$variable} dispatch in {$batch}. "
+                "Could not find the {$variable} dispatch anchor in {$batch}. "
                 . 'Batch context: ' . contexts($content, $resultVariable)
             );
         }
