@@ -32,6 +32,18 @@ function addAfterMatch(path, expression, addition, description) {
     write(path, contents);
 }
 
+function addBeforeMatch(path, expression, addition, description) {
+    let contents = read(path);
+    if (contents.includes(addition.trim())) {
+        return;
+    }
+    if (!expression.test(contents)) {
+        throw new Error(`Could not find ${description} in ${path}`);
+    }
+    contents = contents.replace(expression, (match) => `${addition}\n${match}`);
+    write(path, contents);
+}
+
 const files = ['ngsign.component.ts', 'ngsign.component.html', 'ngsign.component.scss'];
 const targetDirectory = join(componentRoot, 'ngsign');
 mkdirSync(targetDirectory, { recursive: true });
@@ -60,11 +72,11 @@ addAfterMatch(
     "import { NgsignComponent } from './ngsign/ngsign.component';",
     'the send-action IParaphComponent import'
 );
-addAfterMatch(
+addBeforeMatch(
     actionComponent,
-    /@ViewChild\('iParaph',\s*\{\s*static:\s*false\s*}\)\s*iParaph:\s*IParaphComponent;/,
+    /\bconstructor\s*\(/,
     "    @ViewChild('ngsign', { static: false }) ngsign: NgsignComponent;",
-    'the iParaph ViewChild declaration'
+    'the component constructor'
 );
 
 const actionTemplate = join(componentRoot, 'send-external-signatory-book-action.component.html');
