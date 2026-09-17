@@ -38,6 +38,17 @@ function replaceRequired(string $path, array $replacements): void
     }
 }
 
+function contexts(string $content, string $needle): string
+{
+    $offset = 0;
+    $matches = [];
+    while (($position = strpos($content, $needle, $offset)) !== false && count($matches) < 3) {
+        $matches[] = preg_replace('/\s+/', ' ', substr($content, max(0, $position - 220), 600));
+        $offset = $position + strlen($needle);
+    }
+    return implode(' | ', $matches);
+}
+
 try {
     replaceRequired(
         "{$root}/src/app/action/controllers/ExternalSignatoryBookTrait.php",
@@ -95,7 +106,10 @@ PHP,
             . '} elseif ';
         $updated = preg_replace($pattern, $replacement, $content, 1, $count);
         if ($updated === null || $count !== 1) {
-            throw new RuntimeException("Could not find the {$variable} dispatch in {$batch}");
+            throw new RuntimeException(
+                "Could not find the {$variable} dispatch in {$batch}. "
+                . 'Batch context: ' . contexts($content, $resultVariable)
+            );
         }
         $content = $updated;
     }
