@@ -60,7 +60,7 @@ addAfterMatch(
 );
 addAfterMatch(
     appModule,
-    /IParaphComponent,?\s*/,
+    /^\s*IParaphComponent,\s*$/m,
     '        NgsignComponent,',
     'the IParaphComponent declaration'
 );
