@@ -19,6 +19,7 @@ env:
 jobs:
   publish:
     runs-on: ubuntu-latest
+    environment: NGSign
 
     steps:
       - name: Check out the NGSign plugin
