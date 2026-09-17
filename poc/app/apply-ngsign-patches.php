@@ -85,16 +85,17 @@ PHP,
             continue;
         }
 
-        // Depending on the Maarch 2301 minor, iParapheur can be the first
-        // branch (`if`) or a later branch (`} elseif`) in the dispatch chain.
-        $pattern = "~((?:if|} elseif) \(\$configRemoteSignatoryBook\['id'\] == 'iParapheur'\) \{\s*"
-            . preg_quote($resultVariable, '~') . " = .*?;\s*})~s";
-        $replacement = '$1' . " elseif (\$configRemoteSignatoryBook['id'] == 'ngsign') {\n"
+        // Put NGSign first in the dispatch chain. The order and available
+        // built-in books vary between Maarch 2301 minors, so do not rely on
+        // a specific iParapheur branch being present.
+        $pattern = "~if (?=\(\$configRemoteSignatoryBook\['id'\] == '[^']+'\) \{\s*"
+            . preg_quote($resultVariable, '~') . " = .*?;)~s";
+        $replacement = "if (\$configRemoteSignatoryBook['id'] == 'ngsign') {\n"
             . "    {$resultVariable} = \\ExternalSignatoryBook\\ngsign\\controllers\\NgsignController::retrieveSignedMails(['config' => \$configRemoteSignatoryBook, 'idsToRetrieve' => \$idsToRetrieve, 'version' => '{$version}']);\n"
-            . '}';
+            . '} elseif ';
         $updated = preg_replace($pattern, $replacement, $content, 1, $count);
         if ($updated === null || $count !== 1) {
-            throw new RuntimeException("Could not add NGSign {$variable} dispatch in {$batch}");
+            throw new RuntimeException("Could not find the {$variable} dispatch in {$batch}");
         }
         $content = $updated;
     }
