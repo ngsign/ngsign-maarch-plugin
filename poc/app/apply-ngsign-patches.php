@@ -87,46 +87,38 @@ PHP,
     }
 
     $dispatches = [
-        // These are the first dispatch branches in the Maarch Courrier 2301.1.5
-        // runtime image. Insert NGSign before them; no existing provider changes.
-        'retrievedMails' => [
-            'version' => 'noVersion',
-            'provider' => 'ixbus',
-        ],
-        'retrievedLetterboxMails' => [
-            'version' => 'resLetterbox',
-            'provider' => 'maarchParapheur',
-        ],
+        'retrievedMails' => 'noVersion',
+        'retrievedLetterboxMails' => 'resLetterbox',
     ];
-    foreach ($dispatches as $variable => $dispatch) {
+    foreach ($dispatches as $variable => $version) {
         $resultVariable = '$' . $variable;
         if (str_contains($content, "{$resultVariable} = \\ExternalSignatoryBook\\ngsign\\controllers\\NgsignController::retrieveSignedMails")) {
             continue;
         }
 
-        $version = $dispatch['version'];
-        // Whitespace differs between runtime-image builds, hence the flexible
-        // match instead of a literal string replacement.
-        $pattern = "~if\s*\(\s*\$configRemoteSignatoryBook\s*\[\s*'id'\s*\]\s*==\s*'"
-            . preg_quote($dispatch['provider'], '~') . "'\s*\)\s*\{~";
-        $updated = preg_replace_callback(
-            $pattern,
-            static function (array $match) use ($resultVariable, $version): string {
-                return "if (\$configRemoteSignatoryBook['id'] == 'ngsign') {\n"
-                    . "    {$resultVariable} = \\ExternalSignatoryBook\\ngsign\\controllers\\NgsignController::retrieveSignedMails(['config' => \$configRemoteSignatoryBook, 'idsToRetrieve' => \$idsToRetrieve, 'version' => '{$version}']);\n"
-                    . '} elseif ' . preg_replace('~^if\s*~', '', $match[0], 1);
-            },
-            $content,
-            1,
-            $count
-        );
-        if ($count !== 1) {
+        // Locate the first existing dispatch assignment, then insert NGSign
+        // immediately before its enclosing `if`. This avoids relying on the
+        // formatting and provider ordering of a particular Maarch image.
+        $assignmentOffset = strpos($content, "{$resultVariable} =");
+        if ($assignmentOffset === false) {
             throw new RuntimeException(
-                "Could not find the {$variable} dispatch anchor in {$batch}. "
+                "Could not find the {$variable} assignment in {$batch}. "
                 . 'Batch context: ' . contexts($content, $resultVariable)
             );
         }
-        $content = $updated;
+        $conditionOffset = strrpos(substr($content, 0, $assignmentOffset), 'if');
+        $condition = $conditionOffset === false ? '' : substr($content, $conditionOffset, $assignmentOffset - $conditionOffset);
+        if ($conditionOffset === false || !str_contains($condition, '$configRemoteSignatoryBook')) {
+            throw new RuntimeException(
+                "Could not find the {$variable} dispatch condition in {$batch}. "
+                . 'Batch context: ' . contexts($content, $resultVariable)
+            );
+        }
+
+        $ngsignBranch = "if (\$configRemoteSignatoryBook['id'] == 'ngsign') {\n"
+            . "    {$resultVariable} = \\ExternalSignatoryBook\\ngsign\\controllers\\NgsignController::retrieveSignedMails(['config' => \$configRemoteSignatoryBook, 'idsToRetrieve' => \$idsToRetrieve, 'version' => '{$version}']);\n"
+            . '} elseif ' . substr($condition, 2);
+        $content = substr($content, 0, $conditionOffset) . $ngsignBranch . substr($content, $assignmentOffset);
     }
 
     if (file_put_contents($batch, $content) === false) {
